@@ -2,6 +2,8 @@
 
 Une extension VS Code hybride TypeScript/Python pour le développement Rust embarqué, spécialement conçue pour les cartes ESP32-C3 et Raspberry Pi Pico (RP2040).
 
+> 🚧 **Extension en développement** : Actuellement en phase de test. Sera publiée sur le VS Code Marketplace après validation complète avec ESP32-C3.
+
 ## ✨ Fonctionnalités
 
 - 🚀 **Création de projets** : Templates pré-configurés pour ESP32-C3 et Pico RP2040
@@ -22,6 +24,7 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
    npm install
    npm run compile
    ```
+3. **Lancez l'extension** : Appuyez sur `F5` dans VS Code pour démarrer l'extension en mode développement
 
 ## 📋 Prérequis
 
@@ -33,31 +36,36 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 
 ### Configuration initiale automatique
 
-1. Ouvrez la palette de commandes (`Ctrl+Shift+P`)
-2. Exécutez `Rust Embedded: Configurer l'environnement de développement`
-3. L'extension installera automatiquement :
+1. **Lancez l'extension** avec `F5` (les commandes Rust Embedded ne sont disponibles qu'après le lancement)
+2. Ouvrez la palette de commandes (`Ctrl+Shift+P`) 
+3. Exécutez `Rust Embedded: Configurer l'environnement de développement`
+4. L'extension installera automatiquement :
    - **Targets Rust** : `thumbv6m-none-eabi` (Pico), `riscv32imc-unknown-none-elf` (ESP32-C3)
    - **Outils Pico** : `elf2uf2-rs`, `probe-rs`, `llvm-tools-preview`
    - **Outils ESP32-C3** : `espflash`
 
 ### Créer un nouveau projet
 
-**Via l'interface visuelle** :
-1. `Rust Embedded: Ouvrir le panel de bienvenue`
-2. Cliquez sur la carte souhaitée (Pico RP2040 ou ESP32-C3)
-3. Saisissez le nom de votre projet
-4. Le projet est créé avec toutes les configurations optimisées
+**Via l'interface visuelle (Recommandé)** :
+1. Dans la barre d'activité VS Code, cliquez sur l'icône Rust Embedded `[#]`
+2. Cliquez sur **"Ouvrir le panel de bienvenue"** ou utilisez `Ctrl+Shift+P` → `Rust Embedded: Ouvrir le panel de bienvenue`
+3. Cliquez sur la carte souhaitée (Pico RP2040 ou ESP32-C3)
+4. Saisissez le nom de votre projet
+5. Le projet est créé avec toutes les configurations optimisées
 
 **Via les commandes** :
-1. `Rust Embedded: Créer un nouveau projet Rust embarqué`
+1. `Ctrl+Shift+P` → `Rust Embedded: Créer un nouveau projet Rust embarqué`
 2. Choisissez votre nom de projet et carte cible
 3. Le projet sera créé avec la structure et configuration appropriées
 
 ### Compiler et flasher
 
 1. Ouvrez un projet Rust embarqué
-2. `Rust Embedded: Compiler le projet` - Compile pour la target sélectionnée
-3. `Rust Embedded: Flasher le projet` - Flash le firmware sur votre carte
+2. Dans la vue **Rust Embedded Actions** (barre latérale), cliquez simplement sur :
+   - **🛠️ Compiler** → Compile automatiquement pour la target détectée
+   - **⚡ Flasher** → Flash automatiquement le firmware sur votre carte
+
+> ✨ **Plus de commandes à taper !** Utilisez simplement les boutons dans l'interface.
 
 ### 🍓 Flashage Pico RP2040 - Deux modes supportés
 
@@ -66,11 +74,11 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 2. Maintenez le bouton BOOTSEL enfoncé
 3. Rebranchez le Pico (BOOTSEL toujours enfoncé)
 4. Relâchez BOOTSEL → Le Pico apparaît comme lecteur USB
-5. `Rust Embedded: Flasher le projet` → Fichier UF2 copié automatiquement
+5. Cliquez sur **⚡ Flasher** → Fichier UF2 copié automatiquement
 
 **Mode SWD** (avec débogueur SWD connecté) :
 1. Connectez votre débogueur SWD au Pico
-2. `Rust Embedded: Flasher le projet` → Utilise probe-rs automatiquement
+2. Cliquez sur **⚡ Flasher** → Utilise probe-rs automatiquement
 
 ## Structure des projets générés
 
@@ -173,19 +181,35 @@ cd led-blink
 cp target/thumbv6m-none-eabi/release/mon-projet.uf2 /media/$USER/RPI-RP2/
 ```
 
-## 🛠️ Développement
+## 🛠️ Développement de l'extension
 
+### Lancement en mode développement
 ```bash
-# Compiler l'extension
+# Installer les dépendances
+npm install
 npm run compile
 
-# Mode watch
-npm run watch
+# Lancer l'extension de développement
+# Appuyez sur F5 dans VS Code pour démarrer une nouvelle fenêtre avec l'extension active
+```
 
-# Test du backend Python
+### Tests du backend Python
+```bash
+# Configuration complète
 python3 main.py setup
+
+# Test création de projet
 python3 main.py create --target pico --project-name test-pico
+python3 main.py create --target esp32c3 --project-name test-esp32
+
+# Test flashage
 python3 main.py flash --target pico --project-path test-pico
+python3 main.py flash --target esp32c3 --project-path test-esp32
+```
+
+### Mode watch pour développement continu
+```bash
+npm run watch  # Recompile automatiquement à chaque modification
 ```
 
 ## 📝 Notes techniques
