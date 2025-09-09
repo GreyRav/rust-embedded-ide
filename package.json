@@ -1,0 +1,154 @@
+{
+  "name": "rust-embedded-extension",
+  "displayName": "[#] Rust Embedded",
+  "description": "🚀 Extension VS Code pour le développement Rust embarqué (ESP32-C3, Pico RP2040)",
+  "version": "0.1.0",
+  "publisher": "rust-embedded",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Debuggers"
+  ],
+  "keywords": [
+    "rust",
+    "embedded",
+    "esp32",
+    "pico",
+    "rp2040",
+    "microcontroller",
+    "iot"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/Cargo.toml",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "rustEmbedded.welcome",
+        "title": "🏠 Panneau de Bienvenue",
+        "category": "Rust Embedded",
+        "icon": "$(home)"
+      },
+      {
+        "command": "rustEmbedded.createProject",
+        "title": "📁 Créer un nouveau projet",
+        "category": "Rust Embedded",
+        "icon": "$(add)"
+      },
+      {
+        "command": "rustEmbedded.buildProject",
+        "title": "🛠️ Compiler le projet",
+        "category": "Rust Embedded",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "rustEmbedded.flashProject",
+        "title": "⚡ Flasher le projet",
+        "category": "Rust Embedded",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "rustEmbedded.installTarget",
+        "title": "🎯 Installer les targets Rust",
+        "category": "Rust Embedded",
+        "icon": "$(download)"
+      },
+      {
+        "command": "rustEmbedded.installTools",
+        "title": "🔧 Installer les outils de flashage",
+        "category": "Rust Embedded",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "rustEmbedded.setupEnvironment",
+        "title": "⚙️ Configurer l'environnement complet",
+        "category": "Rust Embedded",
+        "icon": "$(gear)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .toml && resourceFilename == Cargo.toml",
+          "command": "rustEmbedded.buildProject",
+          "group": "rust-embedded@1"
+        },
+        {
+          "when": "resourceExtname == .toml && resourceFilename == Cargo.toml",
+          "command": "rustEmbedded.flashProject",
+          "group": "rust-embedded@2"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceExtname == .rs",
+          "command": "rustEmbedded.buildProject",
+          "group": "navigation@1"
+        },
+        {
+          "when": "resourceExtname == .rs",
+          "command": "rustEmbedded.flashProject",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "rustEmbedded.welcome"
+        },
+        {
+          "command": "rustEmbedded.createProject"
+        },
+        {
+          "command": "rustEmbedded.buildProject"
+        },
+        {
+          "command": "rustEmbedded.flashProject"
+        },
+        {
+          "command": "rustEmbedded.installTarget"
+        },
+        {
+          "command": "rustEmbedded.installTools"
+        },
+        {
+          "command": "rustEmbedded.setupEnvironment"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rustEmbedded",
+          "title": "Rust Embedded",
+          "icon": "$(chip)"
+        }
+      ]
+    },
+    "views": {
+      "rustEmbedded": [
+        {
+          "id": "rustEmbeddedActions",
+          "name": "Actions Rapides",
+          "when": "true"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {}
+}
