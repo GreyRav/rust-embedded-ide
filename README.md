@@ -37,7 +37,7 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 ### 🎯 Workflow ultra-simple (3 étapes)
 
 1. **Lancez** : `F5` dans VS Code → L'onglet **Rust Embedded** apparaît dans la barre latérale
-2. **Créez** : Cliquez sur une carte (Pico/ESP32-C3) → Nommez votre projet → Terminé !
+2. **Créez** : Cliquez sur **"Panneau de Bienvenue"** → Cliquez sur une carte (Pico/ESP32-C3) → Nommez votre projet → Terminé !
 3. **Développez** : Codez dans `src/main.rs` → Cliquez **🛠️ Compiler** → Cliquez **⚡ Flasher**
 
 > 🎉 **C'est tout !** Votre code Rust tourne sur votre microcontrôleur.
@@ -46,7 +46,7 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 
 1. **Lancez l'extension** avec `F5` 
 2. Dans la barre latérale gauche, l'onglet **Rust Embedded** apparaît automatiquement
-3. Cliquez sur **"Configurer l'environnement"** dans le panel
+3. Cliquez sur **"Configuration"** dans le panel
 4. L'extension installera automatiquement :
    - **Targets Rust** : `thumbv6m-none-eabi` (Pico), `riscv32imc-unknown-none-elf` (ESP32-C3)
    - **Outils Pico** : `elf2uf2-rs`, `probe-rs`, `llvm-tools-preview`
@@ -56,9 +56,9 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 
 **Via l'interface visuelle (Simple et intuitif)** :
 1. **Après avoir lancé l'extension** (`F5`), l'onglet **Rust Embedded** apparaît dans la barre latérale gauche
-2. Le **panel de bienvenue** s'affiche automatiquement avec les cartes disponibles
+2. Cliquez sur **"Panneau de Bienvenue"** dans le panel
 3. **Cliquez directement** sur la carte souhaitée (Pico RP2040 ou ESP32-C3)
-4. Saisissez le nom de votre projet dans la boîte de dialogue
+4. Saisissez le nom de votre projet dans la boîte de dialogue  
 5. Le projet est créé automatiquement avec toutes les configurations optimisées
 
 **Via les commandes** (optionnel) :
