@@ -174,6 +174,27 @@ export class RustEmbeddedProvider {
         const target = await this.selectTarget();
         if (!target) return;
 
+        // Vérifier si les outils sont installés avant de flasher
+        const toolName = target === 'pico' ? 'probe-rs' : 'espflash';
+        const isInstalled = await this.checkToolInstalled(toolName);
+        
+        if (!isInstalled) {
+            const install = await vscode.window.showWarningMessage(
+                `L'outil de flashage "${toolName}" n'est pas installé. Voulez-vous l'installer maintenant ?`,
+                'Installer', 'Configurer tout', 'Annuler'
+            );
+            
+            if (install === 'Installer') {
+                await this.installSpecificTool(target);
+                return;
+            } else if (install === 'Configurer tout') {
+                await this.setupEnvironment();
+                return;
+            } else {
+                return;
+            }
+        }
+
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: `Flashage pour ${target}...`,
@@ -181,6 +202,29 @@ export class RustEmbeddedProvider {
         }, async (progress) => {
             progress.report({ increment: 0 });
             this.runPythonScript('flash', target);
+        });
+    }
+
+    private async checkToolInstalled(toolName: string): Promise<boolean> {
+        try {
+            const { execSync } = require('child_process');
+            execSync(`${toolName} --version`, { stdio: 'ignore' });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    private async installSpecificTool(target: string): Promise<void> {
+        const toolName = target === 'pico' ? 'probe-rs' : 'espflash';
+        
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Installation de ${toolName}...`,
+            cancellable: false
+        }, async (progress) => {
+            progress.report({ increment: 0 });
+            this.runPythonScript('install-tools', target);
         });
     }
 

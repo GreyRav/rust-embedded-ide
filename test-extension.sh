@@ -66,6 +66,21 @@ for file in "${files[@]}"; do
 done
 
 if [ "$all_good" = true ]; then
+    # Vérification des outils de flashage
+    echo ""
+    echo "🔧 Vérification des outils de flashage..."
+    if command -v probe-rs &> /dev/null; then
+        echo "✅ probe-rs installé: $(probe-rs --version | head -1)"
+    else
+        echo "⚠️  probe-rs non installé (requis pour Pico)"
+    fi
+
+    if command -v espflash &> /dev/null; then
+        echo "✅ espflash installé: $(espflash --version | head -1)"
+    else
+        echo "⚠️  espflash non installé (requis pour ESP32-C3)"
+    fi
+
     echo ""
     echo "🎉 Extension prête à être testée!"
     echo ""
@@ -73,6 +88,9 @@ if [ "$all_good" = true ]; then
     echo "1. Appuyez sur F5 dans VS Code"  
     echo "2. L'extension se lancera dans une nouvelle fenêtre"
     echo "3. Le panneau de bienvenue apparaîtra automatiquement"
+    echo ""
+    echo "⚠️  IMPORTANT - Première utilisation:"
+    echo "   Utilisez '⚙️ Configurer l'Environnement' avant de flasher"
     echo ""
     echo "Fonctionnalités à tester:"
     echo "- 🏠 Panneau de bienvenue avec cartes dev boards"

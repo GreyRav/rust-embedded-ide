@@ -11,7 +11,8 @@ from pathlib import Path
 TARGETS = {
     "pico": {
         "rust_target": "thumbv6m-none-eabi",
-        "flasher": "probe-rs",
+        "flasher": "elf2uf2-rs",  # Convertit ELF vers UF2 pour mode BOOTSEL
+        "flasher_alt": "probe-rs", # Alternative avec débogueur SWD
         "chip": "RP2040",
         "template": "pico_template"
     },
@@ -24,8 +25,12 @@ TARGETS = {
 }
 
 TOOLS = {
+    "elf2uf2-rs": {
+        "install_command": ["cargo", "install", "elf2uf2-rs", "--locked"],
+        "check_command": ["elf2uf2-rs", "--help"]
+    },
     "probe-rs": {
-        "install_command": ["cargo", "install", "probe-rs", "--features", "cli"],
+        "install_command": ["cargo", "install", "probe-rs-tools", "--locked"],
         "check_command": ["probe-rs", "--version"]
     },
     "espflash": {
@@ -37,48 +42,99 @@ TOOLS = {
 def run_command(command, project_path):
     """Exécute une commande en temps réel et affiche sa sortie."""
     print(f"🚀 Exécution de : {' '.join(command)}")
-    # L'argument `cwd` est crucial pour exécuter la commande dans le bon dossier
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding='utf-8',
-        cwd=project_path
-    )
-
-    # Affiche la sortie ligne par ligne en temps réel
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            print(output.strip(), flush=True)
-
-    # Vérifie si la commande a réussi
-    if process.returncode != 0:
-        print(f"❌ Erreur lors de l'exécution de la commande (code: {process.returncode})", file=sys.stderr)
-        sys.exit(process.returncode)
     
-    print("✅ Commande terminée avec succès.")
-    return True
+    try:
+        # L'argument `cwd` est crucial pour exécuter la commande dans le bon dossier
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding='utf-8',
+            cwd=project_path
+        )
+
+        # Affiche la sortie ligne par ligne en temps réel
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip(), flush=True)
+
+        # Vérifie si la commande a réussi
+        if process.returncode != 0:
+            print(f"❌ Erreur lors de l'exécution de la commande (code: {process.returncode})", file=sys.stderr)
+            sys.exit(process.returncode)
+        
+        print("✅ Commande terminée avec succès.")
+        return True
+        
+    except FileNotFoundError as e:
+        tool_name = command[0]
+        print(f"❌ Erreur: L'outil '{tool_name}' n'est pas installé.", file=sys.stderr)
+        print(f"", file=sys.stderr)
+        
+        if tool_name == "probe-rs":
+            print(f"💡 Pour installer probe-rs (outil de flashage Pico):", file=sys.stderr)
+            print(f"   cargo install probe-rs-tools --locked", file=sys.stderr)
+            print(f"   ou utilisez: python3 {sys.argv[0]} install-tools --target pico", file=sys.stderr)
+        elif tool_name == "espflash":
+            print(f"💡 Pour installer espflash (outil de flashage ESP32-C3):", file=sys.stderr)
+            print(f"   cargo install espflash", file=sys.stderr)
+            print(f"   ou utilisez: python3 {sys.argv[0]} install-tools --target esp32c3", file=sys.stderr)
+        elif tool_name == "cargo":
+            print(f"💡 Pour installer Rust et Cargo:", file=sys.stderr)
+            print(f"   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh", file=sys.stderr)
+        elif tool_name == "rustup":
+            print(f"💡 Pour installer rustup:", file=sys.stderr)
+            print(f"   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh", file=sys.stderr)
+        else:
+            print(f"💡 Installez {tool_name} et assurez-vous qu'il soit dans votre PATH.", file=sys.stderr)
+            
+        print(f"", file=sys.stderr)
+        print(f"🔧 Pour configurer automatiquement tout l'environnement:", file=sys.stderr)
+        print(f"   python3 {sys.argv[0]} setup", file=sys.stderr)
+        sys.exit(1)
 
 
 def find_elf_file(project_path, rust_target):
     """Trouve le fichier .elf compilé dans le dossier target."""
-    # Le nom du projet est le nom du dossier parent
-    project_name = Path(project_path).name
-    # Le chemin du fichier .elf est prédictible
+    # Lire le nom du projet depuis Cargo.toml
+    cargo_toml_path = Path(project_path) / "Cargo.toml"
+    project_name = None
+    
+    if cargo_toml_path.exists():
+        try:
+            with open(cargo_toml_path, 'r') as f:
+                for line in f:
+                    if line.startswith('name = '):
+                        project_name = line.split('=')[1].strip().strip('"\'')
+                        break
+        except Exception:
+            pass
+    
+    # Fallback au nom du dossier si on ne trouve pas dans Cargo.toml
+    if not project_name:
+        project_name = Path(project_path).name
+    
+    # Essayer le mode release en premier
     elf_path = Path(project_path) / "target" / rust_target / "release" / project_name
     
-    if not elf_path.exists():
-         # Essayons le mode debug si le mode release n'existe pas
-         elf_path = Path(project_path) / "target" / rust_target / "debug" / project_name
-         if not elf_path.exists():
-            print(f"❌ Impossible de trouver le fichier .elf. Avez-vous compilé le projet ?", file=sys.stderr)
-            return None
-            
-    return str(elf_path)
+    if elf_path.exists() and elf_path.is_file():
+        return str(elf_path)
+    
+    # Essayons le mode debug si le mode release n'existe pas
+    elf_path = Path(project_path) / "target" / rust_target / "debug" / project_name
+    
+    if elf_path.exists() and elf_path.is_file():
+        return str(elf_path)
+    
+    print(f"❌ Impossible de trouver le fichier .elf. Avez-vous compilé le projet ?", file=sys.stderr)
+    print(f"🔍 Recherché:", file=sys.stderr)
+    print(f"   - {Path(project_path) / 'target' / rust_target / 'release' / project_name}", file=sys.stderr)
+    print(f"   - {Path(project_path) / 'target' / rust_target / 'debug' / project_name}", file=sys.stderr)
+    return None
 
 
 def check_tool_installed(tool_name):
@@ -145,6 +201,11 @@ name = "{project_name}"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "{project_name}"
+test = false
+bench = false
+
 [dependencies]
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
@@ -158,6 +219,10 @@ embedded-hal = "0.2.5"
 [dependencies.rp2040-hal]
 version = "0.9"
 features = ["rt", "critical-section-impl"]
+
+# Outils pour la génération UF2
+[dependencies.rp2040-boot2]
+version = "0.3"
 """
     elif target_name == "esp32c3":
         cargo_toml_content += """esp32c3-hal = "0.15"
@@ -172,7 +237,19 @@ esp-println = { version = "0.6", features = ["esp32c3"] }
     cargo_config_dir = full_path / ".cargo"
     cargo_config_dir.mkdir(exist_ok=True)
     
-    config_content = f"""[build]
+    if target_name == "pico":
+        config_content = f"""[build]
+target = "{target_config['rust_target']}"
+
+[target.{target_config['rust_target']}]
+runner = "elf2uf2-rs -d"
+rustflags = [
+    "-C", "link-arg=--nmagic",
+    "-C", "link-arg=-Tlink.x",
+]
+"""
+    else:
+        config_content = f"""[build]
 target = "{target_config['rust_target']}"
 
 [target.{target_config['rust_target']}]
@@ -188,6 +265,28 @@ runner = "probe-rs run --chip {target_config['chip']}"
     
     with open(src_dir / "main.rs", "w") as f:
         f.write(main_rs_content)
+    
+    # Créer le fichier memory.x pour Pico
+    if target_name == "pico":
+        memory_x_content = """/* Memory layout of the RP2040 microcontroller */
+MEMORY {
+    BOOT2 : ORIGIN = 0x10000000, LENGTH = 0x100
+    FLASH : ORIGIN = 0x10000100, LENGTH = 2048K - 0x100
+    RAM   : ORIGIN = 0x20000000, LENGTH = 256K
+}
+
+EXTERN(BOOT2_FIRMWARE)
+
+SECTIONS {
+    /* ### Boot loader */
+    .boot2 ORIGIN(BOOT2) :
+    {
+        KEEP(*(.boot2));
+    } > BOOT2
+} INSERT BEFORE .text;
+"""
+        with open(full_path / "memory.x", "w") as f:
+            f.write(memory_x_content)
     
     print(f"✅ Projet {project_name} créé avec succès dans {full_path}")
     return True
@@ -248,6 +347,172 @@ fn main() -> ! {
 """
     return ""
 
+def flash_pico_uf2_direct(project_path):
+    """Flashage du Pico via cargo run avec elf2uf2-rs."""
+    print("📋 Flashage Pico en mode BOOTSEL (UF2) - Méthode directe")
+    print("ℹ️  Ce mode nécessite que le Pico soit connecté en mode BOOTSEL :")
+    print("   1. Débrancher le Pico")
+    print("   2. Maintenir le bouton BOOTSEL enfoncé")
+    print("   3. Reconnecter le Pico (tout en maintenant BOOTSEL)")
+    print("   4. Relâcher BOOTSEL - le Pico apparaît comme lecteur USB")
+    print()
+    
+    # Utiliser cargo run qui déclenchera elf2uf2-rs comme runner
+    print("🚀 Compilation et flashage via cargo run...")
+    cargo_command = ["cargo", "run", "--release"]
+    
+    result = subprocess.run(cargo_command, cwd=project_path)
+    
+    if result.returncode == 0:
+        print("✅ Flashage Pico terminé avec succès!")
+        return True
+    else:
+        print("❌ Erreur lors du flashage direct", file=sys.stderr)
+        return False
+
+def flash_pico_uf2_binutils(project_path, elf_file):
+    """Flashage du Pico via cargo-binutils (génération .bin → UF2)."""
+    print("🔧 Tentative de génération UF2 via cargo-binutils...")
+    
+    # Générer le fichier .bin depuis l'ELF
+    bin_file = elf_file.replace('.elf', '.bin') if elf_file.endswith('.elf') else elf_file + '.bin'
+    objcopy_command = ["cargo", "objcopy", "--release", "--", "-O", "binary", bin_file]
+    
+    result = subprocess.run(objcopy_command, cwd=project_path, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"❌ Erreur génération binaire:", file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        return False
+    
+    print(f"✅ Fichier binaire créé: {bin_file}")
+    
+    # Convertir .bin vers UF2
+    uf2_file = bin_file.replace('.bin', '.uf2')
+    
+    # Essayer d'abord elf2uf2-rs
+    convert_command = ["elf2uf2-rs", bin_file, uf2_file]
+    result = subprocess.run(convert_command, cwd=project_path, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"⚠️ elf2uf2-rs a échoué, utilisation du convertisseur personnalisé...")
+        # Utiliser notre convertisseur UF2 personnalisé
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        uf2conv_path = os.path.join(script_dir, "uf2conv.py")
+        
+        if os.path.exists(uf2conv_path):
+            custom_command = ["python3", uf2conv_path, bin_file, uf2_file]
+            result = subprocess.run(custom_command, cwd=project_path, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"❌ Erreur conversion .bin vers UF2 (convertisseur personnalisé):", file=sys.stderr)
+                print(result.stderr, file=sys.stderr)
+                return False
+        else:
+            print(f"❌ Convertisseur personnalisé non trouvé: {uf2conv_path}", file=sys.stderr)
+            return False
+    
+    print(f"✅ Fichier UF2 créé: {uf2_file}")
+    
+    # Copier automatiquement vers le Pico si détecté
+    pico_mount_path = detect_pico_uf2_disk()
+    if pico_mount_path:
+        import shutil
+        dest_path = os.path.join(pico_mount_path, os.path.basename(uf2_file))
+        try:
+            shutil.copy2(uf2_file, dest_path)
+            print(f"✅ Fichier UF2 copié vers le Pico: {dest_path}")
+            print("🎉 Flashage terminé! Le Pico va redémarrer automatiquement.")
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la copie vers le Pico: {e}")
+            print(f"📋 Copiez manuellement le fichier: {uf2_file}")
+            print(f"📋 Vers le lecteur Pico: {pico_mount_path}")
+    else:
+        print(f"⚠️ Pico non détecté en mode BOOTSEL")
+        print(f"📋 Copiez manuellement le fichier: {uf2_file}")
+        print(f"📋 Vers le lecteur Pico une fois connecté en mode BOOTSEL")
+    
+    return True
+
+def create_simple_uf2_guide(project_path):
+    """Crée un guide simple pour flasher manuellement le Pico."""
+    print("📖 Guide de flashage manuel Pico:")
+    print()
+    print("1. 🔄 Recompilez le projet avec la configuration correcte:")
+    print(f"   cd {project_path}")
+    print("   cargo build --release")
+    print()
+    print("2. 📁 Créez un nouveau projet Pico avec l'extension pour la bonne config:")
+    print("   python3 main.py create --target pico --project-name nouveau-pico")
+    print()
+    print("3. 📋 Mode BOOTSEL:")
+    print("   - Débranchez le Pico")
+    print("   - Maintenez BOOTSEL enfoncé")
+    print("   - Rebranchez le Pico")
+    print("   - Relâchez BOOTSEL")
+    print("   - Le Pico apparaît comme lecteur USB")
+    print()
+    print("4. 🎯 Utilisez probe-rs en mode SWD (si débogueur disponible):")
+    print(f"   cd {project_path}")
+    print("   cargo run --release")
+    print()
+    return True
+
+def flash_pico_uf2(project_path, elf_file):
+    """Flashage du Pico en mode BOOTSEL (UF2) - Fallback manuel."""
+    print("📋 Flashage Pico en mode BOOTSEL (UF2)")
+    print("ℹ️  Ce mode nécessite que le Pico soit connecté en mode BOOTSEL :")
+    print("   1. Débrancher le Pico")
+    print("   2. Maintenir le bouton BOOTSEL enfoncé")
+    print("   3. Reconnecter le Pico (tout en maintenant BOOTSEL)")
+    print("   4. Relâcher BOOTSEL - le Pico apparaît comme lecteur USB")
+    print()
+    
+    # Essayer d'abord la méthode directe
+    if flash_pico_uf2_direct(project_path):
+        return True
+    
+    # Essayer la méthode binutils avec fallback
+    print("🔧 Méthode directe échouée, tentative via cargo-binutils...")
+    if flash_pico_uf2_binutils(project_path, elf_file):
+        return True
+    
+    # Si toutes les méthodes automatiques échouent, donner des instructions
+    print("💡 Les méthodes automatiques ont échoué.")
+    print()
+    return create_simple_uf2_guide(project_path)
+
+def detect_pico_uf2_disk():
+    """Détecte si le Pico est connecté en mode BOOTSEL (lecteur UF2)."""
+    import glob
+    
+    # Chemins typiques pour un Pico en mode BOOTSEL
+    pico_paths = [
+        "/media/*/RPI-RP2",      # Linux
+        "/Volumes/RPI-RP2",      # macOS
+    ]
+    
+    for pattern in pico_paths:
+        matches = glob.glob(pattern)
+        if matches:
+            path = matches[0]
+            print(f"Found pico uf2 disk {path}")
+            return path
+    
+    return None
+
+def detect_pico_flash_mode():
+    """Détecte la méthode de flashage disponible pour le Pico."""
+    # Priorité au mode BOOTSEL (plus simple, pas de matériel supplémentaire)
+    if check_tool_installed("elf2uf2-rs"):
+        return "bootsel"
+    
+    # Fallback vers mode SWD si débogueur disponible
+    if check_tool_installed("probe-rs"):
+        return "swd"
+    
+    return None
+
 def main():
     """Fonction principale pour parser les arguments et lancer les actions."""
     parser = argparse.ArgumentParser(description="Outil de build et flash pour Rust Embarqué.")
@@ -284,7 +549,25 @@ def main():
     elif args.action == "install-tools":
         if args.target:
             target_config = TARGETS[args.target]
-            install_tool(target_config["flasher"])
+            
+            # Installation spéciale pour Pico (les deux outils)
+            if args.target == "pico":
+                print("📋 Installation des outils pour Pico RP2040...")
+                
+                # Installer llvm-tools-preview pour cargo objcopy
+                print("📋 Installation de llvm-tools-preview...")
+                llvm_command = ["rustup", "component", "add", "llvm-tools-preview"]
+                result = subprocess.run(llvm_command, capture_output=True, text=True)
+                if result.returncode != 0:
+                    print("⚠️ Impossible d'installer llvm-tools-preview")
+                else:
+                    print("✅ llvm-tools-preview installé")
+                
+                install_tool("elf2uf2-rs")  # Mode BOOTSEL (recommandé)
+                install_tool("probe-rs")    # Mode SWD (débogueur)
+            else:
+                # Installation normale pour les autres targets
+                install_tool(target_config["flasher"])
         else:
             # Installer tous les outils
             for tool_name in TOOLS.keys():
@@ -327,18 +610,52 @@ def main():
             if not elf_file:
                 sys.exit(1)
             
-            print(f" Fichier binaire trouvé : {elf_file}")
+            print(f"📁 Fichier binaire trouvé : {elf_file}")
 
-            # 2. Construire la commande de flash
-            flash_command = []
-            if target_config["flasher"] == "probe-rs":
-                flash_command = ["probe-rs", "run", "--chip", target_config["chip"], elf_file]
+            # 2. Traitement spécial pour Pico (RP2040)
+            if args.target == "pico":
+                flash_mode = detect_pico_flash_mode()
                 
-            elif target_config["flasher"] == "espflash":
+                if flash_mode == "bootsel":
+                    # Mode BOOTSEL (recommandé, plus simple)
+                    print("🎯 Utilisation du mode BOOTSEL (UF2)")
+                    if flash_pico_uf2(project_path, elf_file):
+                        print("✅ Flashage Pico terminé avec succès!")
+                    else:
+                        sys.exit(1)
+                        
+                elif flash_mode == "swd":
+                    # Mode SWD avec probe-rs (nécessite débogueur)
+                    print("🎯 Utilisation du mode SWD avec probe-rs")
+                    print("⚠️  Ce mode nécessite un débogueur SWD connecté au Pico")
+                    flash_command = ["probe-rs", "run", "--chip", target_config["chip"], elf_file]
+                    run_command(flash_command, project_path)
+                    
+                else:
+                    # Aucun outil de flashage disponible
+                    print(f"❌ Aucun outil de flashage pour Pico n'est installé.", file=sys.stderr)
+                    print(f"", file=sys.stderr)
+                    print(f"💡 Solutions pour Pico RP2040:", file=sys.stderr)
+                    print(f"   1. Mode BOOTSEL (recommandé): cargo install elf2uf2-rs --locked", file=sys.stderr)
+                    print(f"   2. Mode SWD (avec débogueur): cargo install probe-rs-tools --locked", file=sys.stderr)
+                    print(f"   3. Installation automatique: python3 {sys.argv[0]} install-tools --target pico", file=sys.stderr)
+                    print(f"   4. Configuration complète: python3 {sys.argv[0]} setup", file=sys.stderr)
+                    sys.exit(1)
+                    
+            # 3. Traitement pour ESP32-C3
+            elif args.target == "esp32c3":
+                flasher = target_config["flasher"]
+                if not check_tool_installed(flasher):
+                    print(f"❌ L'outil de flashage '{flasher}' n'est pas installé.", file=sys.stderr)
+                    print(f"", file=sys.stderr)
+                    print(f"💡 Solutions:", file=sys.stderr)
+                    print(f"   1. Installation manuelle: cargo install {flasher}", file=sys.stderr)
+                    print(f"   2. Installation automatique: python3 {sys.argv[0]} install-tools --target {args.target}", file=sys.stderr)
+                    print(f"   3. Configuration complète: python3 {sys.argv[0]} setup", file=sys.stderr)
+                    sys.exit(1)
+                
                 flash_command = ["espflash", "flash", "-M", "dio", elf_file]
-
-            # 3. Exécuter la commande
-            run_command(flash_command, project_path)
+                run_command(flash_command, project_path)
     else:
         print("❌ Target requise pour cette action")
         sys.exit(1)

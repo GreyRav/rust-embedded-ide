@@ -248,9 +248,10 @@ export class WelcomePanel {
                     <span class="card-icon setup">⚙️</span>
                     <div class="card-title">Configurer l'Environnement</div>
                     <div class="card-description">
+                        <strong>⚠️ Recommandé avant le premier usage</strong><br>
                         Installer toutes les targets Rust<br>
                         et les outils de flashage<br>
-                        (probe-rs, espflash)
+                        (probe-rs-tools, espflash)
                     </div>
                 </div>
                 
