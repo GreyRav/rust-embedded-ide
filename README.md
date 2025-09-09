@@ -179,9 +179,92 @@ mon-projet/
 # Via l'extension ou commande
 python3 main.py create --target pico --project-name led-blink
 cd led-blink
-# Modifiez src/main.rs avec votre code LED
+# Modifiez src/main.rs avec le code ci-dessous
 # Flashez via l'extension VS Code
 ```
+
+### 🍓 Exemple de code : LED clignotante Pico RP2040
+Remplacez le contenu de `src/main.rs` par ce code testé et fonctionnel :
+
+```rust
+#![no_std]
+#![no_main]
+
+// Les traits (interfaces) nécessaires pour contrôler la broche (allumer/éteindre).
+use embedded_hal::digital::v2::OutputPin;
+use panic_halt as _;
+use rp_pico::entry;
+use rp_pico::hal::{
+    clocks::{init_clocks_and_plls, Clock},
+    pac,
+    sio::Sio,
+    watchdog::Watchdog,
+};
+
+#[entry]
+fn main() -> ! {
+    let mut pac = pac::Peripherals::take().unwrap();
+    let core = pac::CorePeripherals::take().unwrap();
+    
+    let mut watchdog = Watchdog::new(pac.WATCHDOG);
+    let clocks = init_clocks_and_plls(
+        rp_pico::XOSC_CRYSTAL_FREQ,
+        pac.XOSC,
+        pac.CLOCKS,
+        pac.PLL_SYS,
+        pac.PLL_USB,
+        &mut pac.RESETS,
+        &mut watchdog,
+    )
+    .ok()
+    .unwrap();
+
+    // 1. Initialiser le SIO (Single-cycle I/O) pour accéder aux broches GPIO
+    let sio = Sio::new(pac.SIO);
+
+    // 2. Initialiser les broches GPIO
+    // Le pilote `rp_pico::Pins` est une manière pratique de toutes les configurer.
+    let pins = rp_pico::Pins::new(
+        pac.IO_BANK0,
+        pac.PADS_BANK0,
+        sio.gpio_bank0,
+        &mut pac.RESETS,
+    );
+
+    // 3. Configurer la broche de la LED (pin 25) en sortie "push-pull"
+    // Le pilote nous donne un accès facile à la LED avec `pins.led`
+    let mut led_pin = pins.led.into_push_pull_output();
+
+    // 4. Créer un délai en utilisant le timer du cœur (SysTick)
+    // On lui donne la fréquence de l'horloge système pour qu'il puisse calculer le temps.
+    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+
+    loop {
+        // Allumer la LED (mettre la broche à l'état HAUT)
+        led_pin.set_high().unwrap();
+        // Attendre 500 millisecondes
+        delay.delay_ms(500);
+        // Éteindre la LED (mettre la broche à l'état BAS)
+        led_pin.set_low().unwrap();
+        // Attendre 500 millisecondes
+        delay.delay_ms(500);
+    }
+}
+```
+
+> ✅ **Code testé et fonctionnel !** Ce code fait clignoter la LED intégrée du Pico RP2040 toutes les 500ms.
+
+**Que fait ce code :**
+- 🔧 **Initialise** les horloges et périphériques du RP2040
+- 📍 **Configure** la broche GPIO 25 (LED intégrée) en sortie
+- ⏱️ **Crée** un timer pour les délais précis
+- ♻️ **Boucle** infinie : LED ON → délai 500ms → LED OFF → délai 500ms
+
+**Pour tester :**
+1. Créez un nouveau projet Pico via l'extension
+2. Remplacez `src/main.rs` par ce code
+3. Cliquez **🛠️ Compiler** puis **⚡ Flasher**
+4. Votre Pico clignote ! 🎉
 
 ### Flashage manuel si nécessaire
 ```bash
