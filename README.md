@@ -34,11 +34,19 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 
 ## 🚀 Utilisation
 
+### 🎯 Workflow ultra-simple (3 étapes)
+
+1. **Lancez** : `F5` dans VS Code → L'onglet **Rust Embedded** apparaît dans la barre latérale
+2. **Créez** : Cliquez sur une carte (Pico/ESP32-C3) → Nommez votre projet → Terminé !
+3. **Développez** : Codez dans `src/main.rs` → Cliquez **🛠️ Compiler** → Cliquez **⚡ Flasher**
+
+> 🎉 **C'est tout !** Votre code Rust tourne sur votre microcontrôleur.
+
 ### Configuration initiale automatique
 
-1. **Lancez l'extension** avec `F5` (les commandes Rust Embedded ne sont disponibles qu'après le lancement)
-2. Ouvrez la palette de commandes (`Ctrl+Shift+P`) 
-3. Exécutez `Rust Embedded: Configurer l'environnement de développement`
+1. **Lancez l'extension** avec `F5` 
+2. Dans la barre latérale gauche, l'onglet **Rust Embedded** apparaît automatiquement
+3. Cliquez sur **"Configurer l'environnement"** dans le panel
 4. L'extension installera automatiquement :
    - **Targets Rust** : `thumbv6m-none-eabi` (Pico), `riscv32imc-unknown-none-elf` (ESP32-C3)
    - **Outils Pico** : `elf2uf2-rs`, `probe-rs`, `llvm-tools-preview`
@@ -46,26 +54,25 @@ Une extension VS Code hybride TypeScript/Python pour le développement Rust emba
 
 ### Créer un nouveau projet
 
-**Via l'interface visuelle (Recommandé)** :
-1. Dans la barre d'activité VS Code, cliquez sur l'icône Rust Embedded `[#]`
-2. Cliquez sur **"Ouvrir le panel de bienvenue"** ou utilisez `Ctrl+Shift+P` → `Rust Embedded: Ouvrir le panel de bienvenue`
-3. Cliquez sur la carte souhaitée (Pico RP2040 ou ESP32-C3)
-4. Saisissez le nom de votre projet
-5. Le projet est créé avec toutes les configurations optimisées
+**Via l'interface visuelle (Simple et intuitif)** :
+1. **Après avoir lancé l'extension** (`F5`), l'onglet **Rust Embedded** apparaît dans la barre latérale gauche
+2. Le **panel de bienvenue** s'affiche automatiquement avec les cartes disponibles
+3. **Cliquez directement** sur la carte souhaitée (Pico RP2040 ou ESP32-C3)
+4. Saisissez le nom de votre projet dans la boîte de dialogue
+5. Le projet est créé automatiquement avec toutes les configurations optimisées
 
-**Via les commandes** :
+**Via les commandes** (optionnel) :
 1. `Ctrl+Shift+P` → `Rust Embedded: Créer un nouveau projet Rust embarqué`
 2. Choisissez votre nom de projet et carte cible
-3. Le projet sera créé avec la structure et configuration appropriées
 
 ### Compiler et flasher
 
 1. Ouvrez un projet Rust embarqué
-2. Dans la vue **Rust Embedded Actions** (barre latérale), cliquez simplement sur :
+2. Dans l'onglet **Rust Embedded** (barre latérale gauche), cliquez simplement sur :
    - **🛠️ Compiler** → Compile automatiquement pour la target détectée
    - **⚡ Flasher** → Flash automatiquement le firmware sur votre carte
 
-> ✨ **Plus de commandes à taper !** Utilisez simplement les boutons dans l'interface.
+> ✨ **Interface 100% visuelle !** Tout se fait en quelques clics dans la barre latérale, aucun raccourci clavier nécessaire.
 
 ### 🍓 Flashage Pico RP2040 - Deux modes supportés
 
@@ -104,6 +111,8 @@ mon-projet/
 ```
 
 ## 📋 Commandes disponibles
+
+> 💡 **Interface visuelle recommandée** : Tout est accessible via l'onglet **Rust Embedded** dans la barre latérale gauche. Les commandes `Ctrl+Shift+P` restent disponibles pour ceux qui préfèrent.
 
 - `Rust Embedded: Ouvrir le panel de bienvenue` 🆕
 - `Rust Embedded: Créer un nouveau projet Rust embarqué`
