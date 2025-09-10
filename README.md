@@ -4,7 +4,7 @@
 
 Une extension VS Code hybride TypeScript/Python pour le développement Rust embarqué, spécialement conçue pour les cartes ESP32-C3 et Raspberry Pi Pico (RP2040).
 
-![Capture d'écran de l'extension Rust Embedded](image/extension-visual.png)
+![Capture d'écran de l'extension Rust Embedded](images/extension-visual.png)
 
 > 🚧 **Extension en développement** : Actuellement en phase de test. Sera publiée sur le VS Code Marketplace après validation complète avec ESP32-C3.
 
