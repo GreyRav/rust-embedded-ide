@@ -1,7 +1,5 @@
 # Extension Rust Embedded pour VS Code
 
-[![Soutenez le projet sur Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/openandhack)
-
 Une extension VS Code hybride TypeScript/Python pour le développement Rust embarqué, spécialement conçue pour les cartes ESP32-C3 et Raspberry Pi Pico (RP2040).
 
 ![Capture d'écran de l'extension Rust Embedded](images/extension-visual.png)
@@ -314,3 +312,5 @@ npm run watch  # Recompile automatiquement à chaque modification
 - **Détection multi-plateforme** : Support Linux (`/media/*/RPI-RP2`) et macOS (`/Volumes/RPI-RP2`)  
 - **Memory layout optimisé** : Fichier `memory.x` avec sections BOOT2, FLASH, RAM pour RP2040
 - **Configuration Cargo** : Runner `elf2uf2-rs` configuré automatiquement pour projets Pico
+
+[![Soutenez le projet sur Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/openandhack)
