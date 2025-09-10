@@ -220,7 +220,7 @@ export class WelcomePanel {
         <body>
             <div class="header">
                 <div class="logo">[#] Rust Embedded</div>
-                <div class="subtitle">Développement embarqué pour ESP32-C3 et Raspberry Pi Pico</div>
+                <div class="subtitle">Developpement embarque pour ESP32-C3 et Raspberry Pi Pico</div>
             </div>
             
             <div class="cards-container">
@@ -228,7 +228,7 @@ export class WelcomePanel {
                     <span class="card-icon pico">🍓</span>
                     <div class="card-title">Raspberry Pi Pico</div>
                     <div class="card-description">
-                        Créer un nouveau projet pour RP2040<br>
+                        Creer un nouveau projet pour RP2040<br>
                         <strong>Target:</strong> thumbv6m-none-eabi<br>
                         <strong>Flasher:</strong> probe-rs
                     </div>
@@ -238,7 +238,7 @@ export class WelcomePanel {
                     <span class="card-icon esp32">📡</span>
                     <div class="card-title">ESP32-C3</div>
                     <div class="card-description">
-                        Créer un nouveau projet pour ESP32-C3<br>
+                        Creer un nouveau projet pour ESP32-C3<br>
                         <strong>Target:</strong> riscv32imc-unknown-none-elf<br>
                         <strong>Flasher:</strong> espflash
                     </div>
@@ -248,7 +248,7 @@ export class WelcomePanel {
                     <span class="card-icon setup">⚙️</span>
                     <div class="card-title">Configurer l'Environnement</div>
                     <div class="card-description">
-                        <strong>⚠️ Recommandé avant le premier usage</strong><br>
+                        <strong>⚠️ Recommande avant le premier usage</strong><br>
                         Installer toutes les targets Rust<br>
                         et les outils de flashage<br>
                         (probe-rs-tools, espflash)
@@ -260,26 +260,26 @@ export class WelcomePanel {
                     <div class="card-title">Ouvrir un Projet</div>
                     <div class="card-description">
                         Ouvrir un projet Rust<br>
-                        embarqué existant<br>
+                        embarque existant<br>
                         dans VS Code
                     </div>
                 </div>
             </div>
             
             <div class="features">
-                <h3>🚀 Fonctionnalités</h3>
+                <h3>🚀 Fonctionnalites</h3>
                 <ul>
-                    <li>Templates préconfigurés pour ESP32-C3 et Pico RP2040</li>
-                    <li>Compilation automatisée avec les bonnes targets</li>
+                    <li>Templates preconfigures pour ESP32-C3 et Pico RP2040</li>
+                    <li>Compilation automatisee avec les bonnes targets</li>
                     <li>Flashage direct depuis VS Code</li>
                     <li>Configuration automatique des environnements</li>
-                    <li>Support des HAL spécifiques à chaque carte</li>
+                    <li>Support des HAL specifiques a chaque carte</li>
                 </ul>
             </div>
             
             <div class="quick-actions">
                 <button class="action-btn" onclick="vscode.postMessage({command: 'setupEnvironment'})">
-                    🔧 Configuration Complète
+                    🔧 Configuration Complete
                 </button>
                 <button class="action-btn secondary" onclick="openDocumentation()">
                     📚 Documentation

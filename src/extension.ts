@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new RustEmbeddedProvider(context);
     const actionsProvider = new RustEmbeddedActionsProvider();
 
-    // Enregistrer le provider d'arbre pour la barre latérale
+    // Enregistrer le provider d'arbre pour la barre laterale
     vscode.window.registerTreeDataProvider('rustEmbeddedActions', actionsProvider);
     
     const disposables = [
@@ -24,12 +24,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(...disposables);
 
-    // Afficher automatiquement le panneau de bienvenue au démarrage
+    // Afficher automatiquement le panneau de bienvenue au demarrage
     // seulement si aucun projet Rust n'est ouvert
     const hasCargoToml = vscode.workspace.findFiles('**/Cargo.toml', '**/node_modules/**', 1);
     hasCargoToml.then(files => {
         if (files.length === 0) {
-            // Pas de Cargo.toml trouvé, montrer le panneau de bienvenue
+            // Pas de Cargo.toml trouve, montrer le panneau de bienvenue
             setTimeout(() => {
                 WelcomePanel.createOrShow(context.extensionUri, provider);
             }, 1000);

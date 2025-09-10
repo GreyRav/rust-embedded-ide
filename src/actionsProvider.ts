@@ -19,7 +19,7 @@ export class RustEmbeddedActionsProvider implements vscode.TreeDataProvider<Acti
                 ),
                 new ActionItem(
                     '📁 Nouveau Projet',
-                    'Créer un nouveau projet Rust embarqué',
+                    'Creer un nouveau projet Rust embarque',
                     vscode.TreeItemCollapsibleState.None,
                     'rustEmbedded.createProject'
                 ),
@@ -69,7 +69,7 @@ class ActionItem extends vscode.TreeItem {
             };
         }
 
-        // Définir les icônes selon le label
+        // Definir les icones selon le label
         if (label.includes('🏠')) {
             this.iconPath = new vscode.ThemeIcon('home');
         } else if (label.includes('📁')) {
