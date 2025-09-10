@@ -1,6 +1,7 @@
 # Extension Rust Embedded pour VS Code
 
 [![Soutenez le projet sur Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/openandhack)
+
 Une extension VS Code hybride TypeScript/Python pour le développement Rust embarqué, spécialement conçue pour les cartes ESP32-C3 et Raspberry Pi Pico (RP2040).
 
 > 🚧 **Extension en développement** : Actuellement en phase de test. Sera publiée sur le VS Code Marketplace après validation complète avec ESP32-C3.
